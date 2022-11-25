@@ -2,7 +2,7 @@ const express = require('express');
 // const packageName = require('packageName')
 const cors = require('cors')
 require('dotenv').config();
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 
 const app = express()
 const port = process.env.PORT || 5000;
@@ -23,7 +23,11 @@ async function run() {
     const productCollection = client.db('wamp-db').collection('allProducts')
     const allUsers = client.db('wamp-db').collection('allUsers')
     const allBookings = client.db('wamp-db').collection('allBookings')
-    // const allUsers = client.db('wamp-db').collection('allUsers')
+    const advertisements = client.db('wamp-db').collection('advertisements')
+
+app.get('/isavailable', async(req, res )=> {
+
+})
 
 
 
@@ -37,6 +41,49 @@ async function run() {
       }
       const myorders = await allBookings.find(query).toArray()
       res.send(myorders)
+    })
+
+    
+    // app.get('/allproducts/:id', async (req, res) => {
+    //   let query = {}
+    //   const _id = req.query._id
+      
+    //     query = {
+    //       _id: ObjectId(_id)
+    //     }
+    
+    //   const orderedProduct = await productCollection.find(query).toArray()
+    //   res.send(orderedProduct)
+    // })
+
+    app.put('/allproducts/:id', async (req, res) => {
+      const id = req.params.id;
+      const filter = {_id: ObjectId(id)}
+      const update = req.body;
+      const option = {upsert: true};
+      const edited = {
+        $set: {
+          available: update.available
+        }
+      }
+      const result = await productCollection.updateOne(filter, edited, option);
+      res.send(result)
+    })
+
+
+    app.put('/allusers/:id', async (req, res) => {
+      const id = req.params.id;
+      const filter = {_id: ObjectId(id)}
+      const update = req.body;
+      const option = {upsert: true};
+      const edited = {
+        $set: {
+          isVerifiedSeller: update.isverified
+        }
+      }
+      const result = await allUsers.updateOne(filter, edited, option);
+      console.log(result);
+      res.send(result)
     })
 
 
@@ -107,11 +154,35 @@ async function run() {
       const result = allUsers.insertOne(insertUser);
       res.send(result)
     })
+
+
+
+
     app.post('/insertproduct', (req, res) => {
       const insertProduct = req.body;
       const result = productCollection.insertOne(insertProduct);
       res.send(result)
     })
+
+    app.post('/advertise', (req, res) => {
+      const insertProduct = req.body;
+      const result = advertisements.insertOne(insertProduct);
+      res.send(result)
+    })
+
+    app.get('/advertise', async (req, res) => {
+
+      let query = {};
+
+      const cursor = advertisements.find(query);
+      const products = await cursor.toArray();
+
+      res.send(products)
+    })
+
+
+
+
     app.post('/allbookings', (req, res) => {
       const bookingInfo = req.body;
       const result = allBookings.insertOne(bookingInfo);
@@ -141,25 +212,21 @@ async function run() {
       res.send()
     })
 
-    //     app.put('/services/:id', async (req, res)=>{
-    //       const id = req.params.id;
-    //       const filter = {_id: ObjectId(id)};
-    //       const newReview = req.body
-    //       const option = {upsert: true}
-    //       const addReview = {
-    //         $push: {
-    //           reviews: {
-    //             id: ObjectId(),
-    //             email: newReview.email,
-    //             imgURL: newReview.imgURL,
-    //             reviewMsg: newReview.review
-    //           }
-    //         }
-    //       }
-    //       const result = await serviceCollection.updateOne(filter, addReview, option);
-    //       res.send(result)
+app.delete('/sellers/:id', async(req, res)=> {
+  const id = req.params.id
+  const query = {_id: ObjectId(id)}
+  const result = await allUsers.deleteOne(query);
+  console.log(result);
+res.send(result)
+})
 
-    //   })
+app.delete('/users/:id', async(req, res)=> {
+  const id = req.params.id
+  const query = {_id: ObjectId(id)}
+  const result = await allUsers.deleteOne(query);
+  console.log(result);
+res.send(result)
+})
 
 
 
