@@ -24,6 +24,7 @@ async function run() {
     const allUsers = client.db('wamp-db').collection('allUsers')
     const allBookings = client.db('wamp-db').collection('allBookings')
     const advertisements = client.db('wamp-db').collection('advertisements')
+    const blogs = client.db('wamp-db').collection('blog')
 
 app.get('/isavailable', async(req, res )=> {
 
@@ -134,6 +135,16 @@ app.get('/isavailable', async(req, res )=> {
       let query = {};
 
       const cursor = allBookings.find(query);
+      const orders = await cursor.toArray();
+
+      res.send(orders)
+    })
+
+    app.get('/blog', async (req, res) => {
+
+      let query = {};
+
+      const cursor = blogs.find(query);
       const orders = await cursor.toArray();
 
       res.send(orders)
