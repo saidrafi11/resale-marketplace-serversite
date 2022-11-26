@@ -17,6 +17,23 @@ const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASSWORD}@clu
 
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true, serverApi: ServerApiVersion.v1 });
 
+function verifyJWT(req, res, next){
+ 
+  const authHeader = req.headers.authorization;
+  if(!authHeader){
+    return res.send(401).send({message:'auth header not found'})
+  }
+
+  const token = authHeader.split(' ')[1];
+
+  jwt.verify(token, process.env.ACCESS_TOKEN, function(err, decoded){
+    if(err){
+      res.status(403).send({message: 'jwt verification can not done'})
+    }
+    req.decoded = decoded;
+    next();
+  })
+}
 
 
 async function run() {
@@ -36,22 +53,23 @@ app.get('/isavailable', async(req, res )=> {
       const query = {email: email}
       const user = await allUsers.findOne(query)
       if(user){
-        const token = jwt.sign({email}, processenv.ACCESS_TOKEN, {expiresIn: '1d'})
-        return res.send({accesstoken: token})
+        const token = jwt.sign({email}, process.env.ACCESS_TOKEN, {expiresIn: '1d'})
+        return res.send({accessToken: token})
       }
       
       res.status(403).send({message: "user email not found"})
     })
 
 
-    app.get('/my-orders', async (req, res) => {
-      let query = {}
+    app.get('/my-orders',verifyJWT, async (req, res) => {
+     
       const email = req.query.email
-      if (email) {
-        query = {
-          email: email
-        }
+      const decodedEmail = req.decoded.email
+      if (email !== decodedEmail) {
+        return res.status(403).send({message: 'decoded email not found'})
+        
       }
+      const query = {email: email}
       const myorders = await allBookings.find(query).toArray()
       res.send(myorders)
     })
