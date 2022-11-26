@@ -21,7 +21,7 @@ function verifyJWT(req, res, next){
  
   const authHeader = req.headers.authorization;
   if(!authHeader){
-    return res.send(401).send({message:'auth header not found'})
+    return res.status(401).send({message:'auth header not found'})
   }
 
   const token = authHeader.split(' ')[1];
@@ -96,10 +96,11 @@ app.get('/isavailable', async(req, res )=> {
       const id = req.params.id;
       const filter = {_id: ObjectId(id)}
       const update = req.body;
+      console.log(update);
       const option = {upsert: true};
       const edited = {
         $set: {
-          isVerifiedSeller: update.isverified
+          isVerifiedSeller: update.isVerifiedSeller
         }
       }
       const result = await allUsers.updateOne(filter, edited, option);
@@ -135,6 +136,17 @@ app.get('/isavailable', async(req, res )=> {
       
       const myproducts = await allUsers.find(query).toArray()
       res.send(myproducts)
+    })
+
+
+    app.get('/verifiedseller', async (req, res) => {
+      let query = {}
+      const email = req.query.email
+     
+        query = {email: email}
+      
+      const verifiedSeller = await allUsers.find(query).toArray()
+      res.send(verifiedSeller)
     })
 
 
@@ -231,7 +243,6 @@ app.get('/isavailable', async(req, res )=> {
 
     app.get('/category/:id', async (req, res) => {
       const id = req.params.id;
-      console.log(id);
       const query = {
         category_id: id
       }
