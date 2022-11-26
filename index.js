@@ -31,6 +31,17 @@ app.get('/isavailable', async(req, res )=> {
 
 })
 
+    app.get('/jwt', async(req, res)=>{
+      const email = req.query.email;
+      const query = {email: email}
+      const user = await allUsers.findOne(query)
+      if(user){
+        const token = jwt.sign({email}, processenv.ACCESS_TOKEN, {expiresIn: '1d'})
+        return res.send({accesstoken: token})
+      }
+      
+      res.status(403).send({message: "user email not found"})
+    })
 
 
     app.get('/my-orders', async (req, res) => {
@@ -46,17 +57,7 @@ app.get('/isavailable', async(req, res )=> {
     })
 
     
-    // app.get('/allproducts/:id', async (req, res) => {
-    //   let query = {}
-    //   const _id = req.query._id
-      
-    //     query = {
-    //       _id: ObjectId(_id)
-    //     }
-    
-    //   const orderedProduct = await productCollection.find(query).toArray()
-    //   res.send(orderedProduct)
-    // })
+  
 
     app.put('/allproducts/:id', async (req, res) => {
       const id = req.params.id;
@@ -102,6 +103,8 @@ app.get('/isavailable', async(req, res )=> {
       const myproducts = await productCollection.find(query).toArray()
       res.send(myproducts)
     })
+
+
     app.get('/allsellers', async (req, res) => {
       let query = {}
       
@@ -115,6 +118,9 @@ app.get('/isavailable', async(req, res )=> {
       const myproducts = await allUsers.find(query).toArray()
       res.send(myproducts)
     })
+
+
+
     app.get('/allusers', async (req, res) => {
       let query = {}
       
@@ -140,6 +146,8 @@ app.get('/isavailable', async(req, res )=> {
 
       res.send(orders)
     })
+
+
 
     app.get('/blog', async (req, res) => {
 
@@ -224,21 +232,24 @@ app.get('/isavailable', async(req, res )=> {
       res.send()
     })
 
-app.delete('/sellers/:id', async(req, res)=> {
-  const id = req.params.id
-  const query = {_id: ObjectId(id)}
-  const result = await allUsers.deleteOne(query);
-  console.log(result);
-res.send(result)
-})
 
-app.delete('/users/:id', async(req, res)=> {
-  const id = req.params.id
-  const query = {_id: ObjectId(id)}
-  const result = await allUsers.deleteOne(query);
-  console.log(result);
-res.send(result)
-})
+    app.delete('/sellers/:id', async(req, res)=> {
+      const id = req.params.id
+      const query = {_id: ObjectId(id)}
+      const result = await allUsers.deleteOne(query);
+      console.log(result);
+    res.send(result)
+    })
+
+
+
+    app.delete('/users/:id', async(req, res)=> {
+      const id = req.params.id
+      const query = {_id: ObjectId(id)}
+      const result = await allUsers.deleteOne(query);
+      console.log(result);
+    res.send(result)
+    })
 
 
 
