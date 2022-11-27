@@ -4,6 +4,7 @@ const cors = require('cors')
 const jwt = require('jsonwebtoken')
 require('dotenv').config();
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
+const { query } = require('express');
 
 const app = express()
 const port = process.env.PORT || 5000;
@@ -74,6 +75,21 @@ app.get('/isavailable', async(req, res )=> {
       res.send(myorders)
     })
 
+
+    app.get('/available', async (req, res) => {
+     
+      const productId = req.query.id
+      // const decodedEmail = req.decoded.email
+      // if (email !== decodedEmail) {
+      //   return res.status(403).send({message: 'decoded email not found'})
+        
+      // }
+      const query = {product_id: productId}
+      const bookedProduct = await allBookings.find(query).toArray()
+      // console.log(bookedProduct);
+      res.send(bookedProduct)
+    })
+
     
   
 
@@ -81,6 +97,7 @@ app.get('/isavailable', async(req, res )=> {
       const id = req.params.id;
       const filter = {_id: ObjectId(id)}
       const update = req.body;
+      console.log(update);
       const option = {upsert: true};
       const edited = {
         $set: {
@@ -88,6 +105,17 @@ app.get('/isavailable', async(req, res )=> {
         }
       }
       const result = await productCollection.updateOne(filter, edited, option);
+      res.send(result)
+    })
+
+    
+    app.get('/allproducts/:id', async (req, res) => {
+      const id = req.query.id;
+      const query = {_id: ObjectId(id)}
+      
+      console.log(update);
+      
+      const result = await productCollection.find(query).toArray();
       res.send(result)
     })
 
@@ -104,7 +132,7 @@ app.get('/isavailable', async(req, res )=> {
         }
       }
       const result = await allUsers.updateOne(filter, edited, option);
-      console.log(result);
+      // console.log(result);
       res.send(result)
     })
 
@@ -163,6 +191,21 @@ app.get('/isavailable', async(req, res )=> {
       
       const myproducts = await allUsers.find(query).toArray()
       res.send(myproducts)
+    })
+
+
+    app.get('/product', async (req, res) => {
+      let query = {}
+      const id = req.query.id
+     
+        query = {
+
+          _id: ObjectId(id)
+            
+        }
+      
+      const myproduct = await productCollection.find(query)
+      res.send(myproduct)
     })
 
 
@@ -253,13 +296,13 @@ app.get('/isavailable', async(req, res )=> {
     })
 
 
-    app.get('/mybookings', async (req, res) => {
-      const date = req.query.email
-      console.log(date)
-      const query = {}
-      const options = await appointmentOptionsCollection.find(query).toArray()
-      res.send()
-    })
+    // app.get('/mybookings', async (req, res) => {
+    //   const date = req.query.email
+    //   console.log(date)
+    //   const query = {}
+    //   const options = await appointmentOptionsCollection.find(query).toArray()
+    //   res.send()
+    // })
 
 
     app.delete('/sellers/:id', async(req, res)=> {
@@ -278,6 +321,14 @@ app.get('/isavailable', async(req, res )=> {
       const result = await allUsers.deleteOne(query);
       console.log(result);
     res.send(result)
+    })
+
+    app.get('/users/seller/:email', async(req, res)=> {
+      const email = req.params.email
+      const query = {email}
+      const user = await allUsers.findOne(query);
+      // console.log(user);
+    res.send({isSeller: user?.role === 'seller'})
     })
 
 
